@@ -10,7 +10,7 @@ gsap.registerPlugin(TextPlugin, EasePack);
 function App() {
   const [time, setTime] = useState('')
   const [countDown, setCountDown] = useState('')
-  const countDownDateRef = useRef(new Date("Jan 1, 2025 00:00:00").getTime())
+  const countDownDateRef = useRef(new Date("Jan 1, 2026 00:00:00").getTime())
   // const countDownDateRef = useRef(new Date("Dec 31, 2024 19:56:55").getTime())
   const textRef = useRef<HTMLHeadingElement | null>(null)
   const [isHappyNewYear, setIsHappyNewYear] = useState(false)
