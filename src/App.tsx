@@ -89,7 +89,7 @@ function App() {
       )}
       <div className="card">
         <p>
-          Countdown <code>to</code> the year 2025.
+          Countdown <code>to</code> the year 2026.
         </p>
       </div>
       <p className="read-the-docs">
@@ -172,7 +172,7 @@ const SvgText = () => {
     return () => clearInterval(interval);
   }, [])
 
-  // if (msgRef.current) return <h2 className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-white to-[gold] p-2'>Welcome to 2025</h2>
+  // if (msgRef.current) return <h2 className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-white to-[gold] p-2'>Welcome to 2026</h2>
 
   return (
     <div className='space-y-1'>
