@@ -14,6 +14,25 @@ function App() {
   // const countDownDateRef = useRef(new Date("Dec 31, 2024 19:56:55").getTime())
   const textRef = useRef<HTMLHeadingElement | null>(null)
   const [isHappyNewYear, setIsHappyNewYear] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check localStorage first, then system preference
+    const stored = localStorage.getItem('darkMode')
+    if (stored !== null) {
+      return stored === 'true'
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
+
+  useEffect(() => {
+    // Apply dark mode class to document
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+    // Save to localStorage
+    localStorage.setItem('darkMode', String(isDarkMode))
+  }, [isDarkMode])
 
   useEffect(() => {
     const updateTimer = () => {
@@ -71,11 +90,32 @@ function App() {
     return () => clearInterval(interval);
   }, [countDown])
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => !prev)
+  }
+
   return (
     <div className='space-y-1'>
-      <button className='absolute top-0 right-0 m-8'>
-        {time}
-      </button>
+      <div className='absolute top-0 right-0 m-8 flex items-center gap-4'>
+        <button
+          onClick={toggleDarkMode}
+          className='p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors'
+          aria-label="Toggle dark mode"
+        >
+          {isDarkMode ? (
+            <svg className="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+          )}
+        </button>
+        <button className='bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg'>
+          {time}
+        </button>
+      </div>
       <div className='flex w-full justify-center'>
         <a className='aspect-square flex flex-col items-center justify-center max-h-36' href="https://react.dev" target="_blank">
           <img src={reactLogo} className={`logo pog !h-60 max-w-none ${!isHappyNewYear ? 'animate-animate-spin-20s' : 'animate-pulse'}`} alt="RCCG logo" />
@@ -83,16 +123,16 @@ function App() {
       </div>
       {isHappyNewYear ? <SvgText/> : (
         <>
-          <p className="text-4xl md:text-6xl">Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span></p>
-          <h1 ref={textRef} className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-white to-[gold] p-1'>{countDown}</h1>
+          <p className="text-4xl md:text-6xl text-gray-900 dark:text-white">Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span></p>
+          <h1 ref={textRef} className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-[gold] dark:from-white dark:to-[gold] p-1'>{countDown}</h1>
         </>
       )}
       <div className="card">
-        <p>
-          Countdown <code>to</code> the year 2026.
+        <p className="text-gray-700 dark:text-gray-300">
+          Countdown <code className="text-gray-900 dark:text-gray-100">to</code> the year 2026.
         </p>
       </div>
-      <p className="read-the-docs">
+      <p className="read-the-docs text-gray-600 dark:text-gray-400">
         Designed by <b>Ayomide</b>
       </p>
     </div>
@@ -176,9 +216,9 @@ const SvgText = () => {
 
   return (
     <div className='space-y-1'>
-      <h1 ref={textRef} className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-white to-[gold] p-2'>{"Happy New Year"}</h1>
-      <p className="font-[myFirstFont]">from</p>
-      <p ref={containerRef} className="text-4xl md:text-6xl">Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span></p>
+      <h1 ref={textRef} className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-[gold] dark:from-white dark:to-[gold] p-2'>{"Happy New Year"}</h1>
+      <p className="font-[myFirstFont] text-gray-900 dark:text-white">from</p>
+      <p ref={containerRef} className="text-4xl md:text-6xl text-gray-900 dark:text-white">Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span></p>
     </div>
   )
 }
