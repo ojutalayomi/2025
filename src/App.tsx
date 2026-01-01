@@ -10,7 +10,7 @@ gsap.registerPlugin(TextPlugin, EasePack);
 function App() {
   const [time, setTime] = useState('')
   const [countDown, setCountDown] = useState('')
-  const countDownDateRef = useRef(new Date("Jan 1, 2026 00:00:00").getTime())
+  const countDownDateRef = useRef(new Date("Jan 1, 2027 00:00:00").getTime())
   // const countDownDateRef = useRef(new Date("Dec 31, 2024 19:56:55").getTime())
   const textRef = useRef<HTMLHeadingElement | null>(null)
   const [isHappyNewYear, setIsHappyNewYear] = useState(false)
@@ -77,9 +77,9 @@ function App() {
       const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
   
       // Display the result in an element with id="countdown"
-      if (new Date().getTime() < countDownDateRef.current) setCountDown(formattedDays + " : " + formattedHours + " : " + formattedMinutes + " : " + formattedSeconds)
-      else {
-        // setCountDown("Happy New Year")
+      if (now < countDownDateRef.current) {
+        setCountDown(formattedDays + " : " + formattedHours + " : " + formattedMinutes + " : " + formattedSeconds)
+      } else {
         setIsHappyNewYear(true)
       }
     };
@@ -88,7 +88,7 @@ function App() {
     updateTimer(); // Call once to set initial time
 
     return () => clearInterval(interval);
-  }, [countDown])
+  }, [])
 
   const toggleDarkMode = () => {
     setIsDarkMode(prev => !prev)
@@ -117,19 +117,25 @@ function App() {
         </button>
       </div>
       <div className='flex w-full justify-center'>
-        <a className='aspect-square flex flex-col items-center justify-center max-h-36' href="https://react.dev" target="_blank">
-          <img src={reactLogo} className={`logo pog !h-60 max-w-none ${!isHappyNewYear ? 'animate-animate-spin-20s' : 'animate-pulse'}`} alt="RCCG logo" />
+        <a className='aspect-square flex flex-col items-center justify-center max-h-36' href="#">
+          <img 
+            src={reactLogo} 
+            className={`logo pog !h-60 max-w-none ${!isHappyNewYear ? 'animate-animate-spin-20s' : 'animate-pulse'}`} 
+            alt="RCCG logo"
+            loading="eager"
+            decoding="async"
+          />
         </a>
       </div>
       {isHappyNewYear ? <SvgText/> : (
         <>
-          <p className="text-4xl md:text-6xl text-gray-900 dark:text-white">Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span></p>
+          <p className="text-4xl md:text-6xl text-gray-900 dark:text-white relative z-10">Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span></p>
           <h1 ref={textRef} className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-[gold] dark:from-white dark:to-[gold] p-1'>{countDown}</h1>
         </>
       )}
       <div className="card">
         <p className="text-gray-700 dark:text-gray-300">
-          Countdown <code className="text-gray-900 dark:text-gray-100">to</code> the year 2026.
+          Countdown <code className="text-gray-900 dark:text-gray-100">to</code> the year 2027.
         </p>
       </div>
       <p className="read-the-docs text-gray-600 dark:text-gray-400">
@@ -180,45 +186,157 @@ export default App
 
 const SvgText = () => {
   const textRef = useRef<HTMLHeadingElement | null>(null)
+  const fromTextRef = useRef<HTMLParagraphElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const msgRef = useRef(false)
+  const timelineRef = useRef<gsap.core.Timeline | null>(null)
 
   useEffect(() => {
     const displayText = () => {
+      // Kill any existing timeline to prevent conflicts
+      if (timelineRef.current) {
+        timelineRef.current.kill()
+      }
+
       msgRef.current = false
-      const words: HTMLHeadingElement[] = gsap.utils.toArray(textRef.current),
-      tl = gsap.timeline({delay: 0.5}),
-      timePerCharacter = 0.2;
+      
+      if (!textRef.current || !containerRef.current) return
 
-      words.forEach(el => {
-        tl.from(el, {text: "", duration: el.innerHTML.length * timePerCharacter, ease: "none"});
-      });
+      // Store original text content
+      const originalText = "Happy New Year"
+      const originalContainerText = "Place Of GOLD"
+      const spanHTML = '<span class="text-[gold] font-[myFirstFont]">GOLD</span>'
 
-      const cwords: HTMLDivElement[] = gsap.utils.toArray(containerRef.current),
-      ctl = gsap.timeline({delay: 3}),
-      ctimePerCharacter = 0.1;
+      // Set initial state with GPU acceleration and opacity
+      gsap.set([textRef.current, containerRef.current, fromTextRef.current], {
+        force3D: true,
+        willChange: "contents, opacity, transform"
+      })
 
-      cwords.forEach(el => {
-        ctl.from(el, {text: "", duration: el.innerHTML.length * ctimePerCharacter, ease: "none"});
-      });
+      // Create main timeline with smooth easing
+      const masterTimeline = gsap.timeline({
+        defaults: {
+          force3D: true
+        }
+      })
+
+      // Animate "Happy New Year" with smooth text reveal and fade-in
+      masterTimeline
+        .set(textRef.current, { 
+          text: "",
+          opacity: 0,
+          scale: 0.9
+        })
+        .to(textRef.current, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          ease: "power2.out"
+        })
+        .to(textRef.current, {
+          text: originalText,
+          duration: originalText.length * 0.12,
+          ease: "power1.inOut",
+          force3D: true
+        }, "-=0.3") // Start text animation slightly before fade completes
+
+      // Animate "from" text with a subtle entrance
+      if (fromTextRef.current) {
+        gsap.set(fromTextRef.current, { opacity: 0, y: 20 })
+        masterTimeline.to(fromTextRef.current, {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: "power2.out"
+        }, "-=0.5")
+      }
+
+      // Animate container text with smooth reveal
+      const tempText = containerRef.current.textContent || originalContainerText
+      containerRef.current.textContent = ""
+      
+      masterTimeline
+        .set(containerRef.current, {
+          text: "",
+          opacity: 0,
+          scale: 0.95
+        })
+        .to(containerRef.current, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.5,
+          ease: "power2.out"
+        })
+        .to(containerRef.current, {
+          text: tempText,
+          duration: originalContainerText.length * 0.1,
+          ease: "power1.inOut",
+          force3D: true,
+          onComplete: () => {
+            // Restore the span after animation with a subtle highlight effect
+            if (containerRef.current) {
+              containerRef.current.innerHTML = `Place Of ${spanHTML}`
+              const goldSpan = containerRef.current.querySelector('span')
+              if (goldSpan) {
+                gsap.fromTo(goldSpan, 
+                  { scale: 1.2, opacity: 0 },
+                  { 
+                    scale: 1, 
+                    opacity: 1, 
+                    duration: 0.4,
+                    ease: "back.out(1.7)"
+                  }
+                )
+              }
+            }
+          }
+        }, "-=0.2")
+
+      timelineRef.current = masterTimeline
 
       setTimeout(() => {
         msgRef.current = true
-      }, 12000);
+      }, 8000);
     }
-    displayText();
-    const interval = setInterval(displayText, 13000);
+    
+    // Small delay to ensure DOM is ready
+    const timeout = setTimeout(displayText, 100);
+    const interval = setInterval(displayText, 9000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+      if (timelineRef.current) {
+        timelineRef.current.kill();
+      }
+    }
   }, [])
 
-  // if (msgRef.current) return <h2 className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-white to-[gold] p-2'>Welcome to 2026</h2>
+  // if (msgRef.current) return <h2 className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-white to-[gold] p-2'>Welcome to 2027</h2>
 
   return (
     <div className='space-y-1'>
-      <h1 ref={textRef} className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-[gold] dark:from-white dark:to-[gold] p-2'>{"Happy New Year"}</h1>
-      <p className="font-[myFirstFont] text-gray-900 dark:text-white">from</p>
-      <p ref={containerRef} className="text-4xl md:text-6xl text-gray-900 dark:text-white">Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span></p>
+      <h1 
+        ref={textRef} 
+        className='min-[876px]:text-9xl md:text-8xl min-[1040px]:text-[10rem] font-base react bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-[gold] dark:from-white dark:to-[gold] p-2'
+        style={{ willChange: 'contents, opacity, transform', transform: 'translateZ(0)' }}
+      >
+        Happy New Year
+      </h1>
+      <p 
+        ref={fromTextRef}
+        className="font-[myFirstFont] text-3xl text-gray-900 dark:text-white"
+        style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
+      >
+        from
+      </p>
+      <p 
+        ref={containerRef} 
+        className="text-4xl md:text-6xl text-gray-900 dark:text-white"
+        style={{ willChange: 'contents, opacity, transform', transform: 'translateZ(0)' }}
+      >
+        Place Of <span className="text-[gold] font-[myFirstFont]">GOLD</span>
+      </p>
     </div>
   )
 }
